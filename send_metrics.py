@@ -12,36 +12,43 @@ results = []
 for result in data['Results']:
     target = result['Target']
     for vuln in result.get('Vulnerabilities', []):
-        vulnerability_id = vuln['VulnerabilityID']
         severity = vuln['Severity']
         results.append({
             "Target": target,
-            "VulnerabilityID": vulnerability_id,
             "Severity": severity
         })
 
 # Count the number of vulnerabilities by severity
-high_count = sum(1 for r in results if r['Severity'] == 'HIGH')
-critical_count = sum(1 for r in results if r['Severity'] == 'CRITICAL')
-medium_count = sum(1 for r in results if r['Severity'] == 'MEDIUM')
-low_count = sum(1 for r in results if r['Severity'] == 'LOW')
-total_count = high_count + critical_count + medium_count + low_count
+severity_counts = {
+    'HIGH': 0,
+    'CRITICAL': 0,
+    'MEDIUM': 0,
+    'LOW': 0
+}
+
+for result in results:
+    severity = result['Severity'].upper()
+    if severity in severity_counts:
+        severity_counts[severity] += 1
 
 # Get repository name from environment
-repo_name = os.getenv('GITHUB_REPO', 'unknown_repo')  # Default to 'unknown_repo' if not set
+repo_name = os.getenv('GITHUB_REPO', 'unknown_repo')
 
 # Prepare the data payload for Datadog
 timestamp = int(time.time())
 data_payload = {
-    "series": [
-        {
+    "series": []
+}
+
+# Add metrics for each severity level with appropriate tags
+for severity, count in severity_counts.items():
+    if count > 0:  # Only include if there are vulnerabilities of this severity
+        data_payload["series"].append({
             "metric": "trivy.vulnerabilities.count",
             "type": "gauge",
-            "points": [[timestamp, total_count]],
-            "tags": [f"repo:{repo_name}", "source:trivy"]
-        }
-    ]
-}
+            "points": [[timestamp, count]],
+            "tags": [f"repo:{repo_name}", f"severity:{severity.lower()}", "source:trivy"]
+        })
 
 # Send the data to Datadog
 datadog_api_key = os.getenv('DD_API_KEY')
