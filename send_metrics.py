@@ -35,30 +35,6 @@ timestamp = int(time.time())
 data_payload = {
     "series": [
         {
-            "metric": "trivy.vulnerabilities.high",
-            "type": "gauge",
-            "points": [[timestamp, high_count]],
-            "tags": [f"repo:{repo_name}", "severity:high", "source:trivy"]
-        },
-        {
-            "metric": "trivy.vulnerabilities.critical",
-            "type": "gauge",
-            "points": [[timestamp, critical_count]],
-            "tags": [f"repo:{repo_name}", "severity:critical", "source:trivy"]
-        },
-        {
-            "metric": "trivy.vulnerabilities.medium",
-            "type": "gauge",
-            "points": [[timestamp, medium_count]],
-            "tags": [f"repo:{repo_name}", "severity:medium", "source:trivy"]
-        },
-        {
-            "metric": "trivy.vulnerabilities.low",
-            "type": "gauge",
-            "points": [[timestamp, low_count]],
-            "tags": [f"repo:{repo_name}", "severity:low", "source:trivy"]
-        },
-        {
             "metric": "trivy.vulnerabilities.count",
             "type": "gauge",
             "points": [[timestamp, total_count]],
